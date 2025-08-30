@@ -5,23 +5,23 @@ variable "cluster_name" {
 }
 
 variable "cluster_version" {
-  description = "Kubernetes version for EKS"
+  description = "Kubernetes version"
   type        = string
   default     = "1.29"
 }
 
 variable "vpc_id" {
-  description = "VPC id where EKS will be deployed"
+  description = "VPC ID"
   type        = string
 }
 
 variable "private_subnets" {
-  description = "List of private subnet IDs for worker nodes"
+  description = "Private subnet IDs for worker nodes"
   type        = list(string)
 }
 
 variable "tags" {
-  description = "Common tags"
+  description = "Tags for resources"
   type        = map(string)
   default     = {}
 }
