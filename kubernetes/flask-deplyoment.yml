@@ -14,38 +14,36 @@ spec:
     spec:
       containers:
       - name: flask
-        image: harsha12101503/myapp:v1
+        image: harsha12101503/myapp:v2
         ports:
         - containerPort: 5000
-        env:
-        - name: S3_BUCKET
-          value: "my-eks-flask-bucket"
-        - name: POSTGRES_HOST
-          value: "postgres"
-        - name: POSTGRES_DB
-          value: "postgres"
-        - name: POSTGRES_USER
-          valueFrom:
-            secretKeyRef:
-              name: postgres-secret
-              key: POSTGRES_USER
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: postgres-secret
-              key: POSTGRES_PASSWORD
-        # Health checks
-        livenessProbe:
-          httpGet:
-            path: /up
-            port: 5000
-          initialDelaySeconds: 10
-          periodSeconds: 15
-          failureThreshold: 3
+        envFrom:
+        - secretRef:
+            name: postgres-secret   # DB credentials
+        - secretRef:
+            name: s3-secret         # S3 credentials
         readinessProbe:
           httpGet:
             path: /up
             port: 5000
           initialDelaySeconds: 5
-          periodSeconds: 10
-          failureThreshold: 3
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /up
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-service
+spec:
+  selector:
+    app: flask
+  ports:
+    - port: 80
+      targetPort: 5000
+  type: ClusterIP
+

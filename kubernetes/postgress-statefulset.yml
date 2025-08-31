@@ -20,7 +20,7 @@ spec:
         - containerPort: 5432
         envFrom:
         - secretRef:
-            name: postgres-secret
+            name: postgres-secret   # Kubernetes secret, not in Git
         volumeMounts:
         - name: postgres-data
           mountPath: /var/lib/postgresql/data
@@ -28,10 +28,12 @@ spec:
   - metadata:
       name: postgres-data
     spec:
-      accessModes: [ "ReadWriteOnce" ]
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: gp2-immediate-csi
       resources:
         requests:
           storage: 5Gi
+      
 ---
 apiVersion: v1
 kind: Service
@@ -43,3 +45,4 @@ spec:
   clusterIP: None
   selector:
     app: postgres
+

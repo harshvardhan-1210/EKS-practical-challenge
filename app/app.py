@@ -1,23 +1,29 @@
 from flask import Flask, request, jsonify
-import boto3, psycopg2, os
+import boto3, psycopg2, os, time
 
 app = Flask(__name__)
 
-S3_BUCKET = os.getenv("S3_BUCKET")
+S3_BUCKET = os.getenv("S3_BUCKET", "my-eks-flask-bucket1" )
 POSTGRES_HOST = os.getenv("POSTGRES_HOST", "postgres")
-POSTGRES_DB = os.getenv("POSTGRES_DB", "postgres")
+POSTGRES_DB = os.getenv("POSTGRES_DB", "mydatabase")
 POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "password")
 
 s3 = boto3.client("s3")
 
 def get_db_conn():
-    return psycopg2.connect(
-        host=POSTGRES_HOST,
-        dbname=POSTGRES_DB,
-        user=POSTGRES_USER,
-        password=POSTGRES_PASSWORD
-    )
+    while True:
+        try:
+            conn = psycopg2.connect(
+                host=POSTGRES_HOST,
+                dbname=POSTGRES_DB,
+                user=POSTGRES_USER,
+                password=POSTGRES_PASSWORD
+            )
+            return conn
+        except Exception as e:
+            print("Postgres not ready, retrying...", e)
+            time.sleep(5)
 
 @app.route("/up")
 def up():
@@ -46,3 +52,4 @@ def dbtest():
     cur.close()
     conn.close()
     return {"records": rows}
+
